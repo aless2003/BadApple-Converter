@@ -1,0 +1,44 @@
+plugins {
+    id 'java'
+    id 'application'
+    id "com.github.sgtsilvio.gradle.utf8" version "0.1.0"
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://jitpack.io'
+    }
+}
+
+compileJava.options.encoding = 'UTF-8'
+mainClassName = 'com.diamond.badApple.Main'
+
+dependencies {
+    implementation 'ch.qos.logback:logback-classic:1.4.5'
+    implementation 'org.fusesource.jansi:jansi:2.4.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    implementation group: 'org.bytedeco', name: 'javacv-platform', version: '1.5.8'
+    implementation 'com.github.umjammer:jlayer:1.0.2'
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+    implementation 'me.tongfei:progressbar:0.9.5'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.diamond.badApple.Main'
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    //duplicate handling strategy
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
