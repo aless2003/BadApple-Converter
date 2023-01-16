@@ -19,9 +19,6 @@ import org.bytedeco.javacv.Java2DFrameConverter;
 
 public class FrameExtractor {
 
-  private static final org.slf4j.Logger logger =
-      org.slf4j.LoggerFactory.getLogger(FrameExtractor.class);
-
   private final File videoFile;
   private final File outDir;
 
@@ -81,6 +78,8 @@ public class FrameExtractor {
             pb.stepBy(size - futures.size());
           }
         }
+
+        executor.shutdown();
       }
     } catch (IOException e) {
       throw new RuntimeException(e);

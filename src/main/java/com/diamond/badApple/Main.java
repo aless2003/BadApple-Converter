@@ -18,7 +18,7 @@ public class Main {
   private static final String VIDEO_NAME = "amatsuki";
   private static final String VIDEO_FILE = "input/" + VIDEO_NAME + ".mp4";
   private static final String AUDIO_FILE = "input/" + VIDEO_NAME + ".mp3";
-  public static final int RESIZED_WIDTH = 200;
+  public static final int RESIZED_WIDTH = 300;
 
   public static void main(String[] args) throws IOException, JavaLayerException {
     File outDir = new File("out");
