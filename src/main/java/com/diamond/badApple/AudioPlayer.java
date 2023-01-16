@@ -13,6 +13,7 @@ import javazoom.jl.player.Player;
 public class AudioPlayer {
 
   private final Player player;
+
   public AudioPlayer(File audioFile) throws FileNotFoundException, JavaLayerException {
     BufferedInputStream in = new BufferedInputStream(new FileInputStream(audioFile));
     // create Audio Device so it plays on standard output
@@ -20,6 +21,7 @@ public class AudioPlayer {
 
     player = new Player(in);
   }
+
   public void play(CountDownLatch latch) {
     try {
       latch.await();

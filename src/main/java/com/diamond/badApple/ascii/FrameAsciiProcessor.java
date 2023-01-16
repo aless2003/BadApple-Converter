@@ -71,7 +71,7 @@ public class FrameAsciiProcessor {
   }
 
   private void printNext() {
-    //clearScreen();
+    // clearScreen();
     if (counter >= asciiFrames.length) {
       executor.shutdown();
       return;
@@ -87,28 +87,25 @@ public class FrameAsciiProcessor {
   }
 
   private void printDiff(String prevFrame, String nextFrame) {
-      int rows = prevFrame.split("\\n").length;
-      int cols = prevFrame.split("\\n")[0].length();
+    int rows = prevFrame.split("\\n").length;
+    int cols = prevFrame.split("\\n")[0].length();
 
+    for (int currentRow = 0; currentRow < rows; currentRow++) {
 
-      for (int currentRow = 0; currentRow < rows; currentRow++) {
+      for (int currentCol = 0; currentCol < cols - 1; currentCol++) {
 
-        for (int currentCol = 0; currentCol < cols - 1; currentCol++) {
+        int currentIndex = currentRow * (cols + 1) + currentCol;
 
-          int currentIndex = currentRow * (cols + 1) + currentCol;
+        char prevChar = prevFrame.charAt(currentIndex);
+        char nextChar = nextFrame.charAt(currentIndex);
 
-          char prevChar = prevFrame.charAt(currentIndex);
-          char nextChar = nextFrame.charAt(currentIndex);
+        if (prevChar != nextChar) {
+          Ansi ansi = Ansi.ansi().cursor(currentRow, currentCol).a(nextChar);
 
-          if (prevChar != nextChar) {
-            Ansi ansi = Ansi.ansi()
-                .cursor(currentRow, currentCol)
-                .a(nextChar);
-
-            System.out.print(ansi);
-          }
+          System.out.print(ansi);
         }
       }
+    }
   }
 
   private void convert(File dir) {
@@ -119,18 +116,19 @@ public class FrameAsciiProcessor {
       throw new RuntimeException("No frames found");
     }
 
-//sort frames so it's in numerical order instead of frames 38 coming after 3700
-    Comparator<File> comparator = Comparator.comparingInt(
-        o -> Integer.parseInt(o.getName().split("-")[1].split("\\.")[0]));
+    // sort frames so it's in numerical order instead of frames 38 coming after 3700
+    Comparator<File> comparator =
+        Comparator.comparingInt(o -> Integer.parseInt(o.getName().split("-")[1].split("\\.")[0]));
 
     List<File> frames = Arrays.stream(unsortedFrames).sorted(comparator).toList();
 
     asciiFrames = new String[frames.size()];
 
-    var builderPB = new ProgressBarBuilder()
-        .setTaskName("Converting frames")
-        .setInitialMax(frames.size())
-        .setStyle(ProgressBarStyle.ASCII);
+    var builderPB =
+        new ProgressBarBuilder()
+            .setTaskName("Converting frames")
+            .setInitialMax(frames.size())
+            .setStyle(ProgressBarStyle.ASCII);
 
     try (ProgressBar pb = builderPB.build()) {
 
@@ -150,5 +148,4 @@ public class FrameAsciiProcessor {
     System.out.print(Ansi.ansi().eraseScreen());
     System.out.print(Ansi.ansi().cursor(0, 0));
   }
-
 }

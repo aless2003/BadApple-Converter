@@ -6,6 +6,7 @@ import java.io.IOException;
 public class ConsoleUtils {
 
   private static final BufferedOutputStream out = new BufferedOutputStream(System.out);
+
   public static void print(String str) {
     try {
       out.write(str.getBytes());
@@ -14,6 +15,4 @@ public class ConsoleUtils {
       throw new RuntimeException(e);
     }
   }
-
-
 }
