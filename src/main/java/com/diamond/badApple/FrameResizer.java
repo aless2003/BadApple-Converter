@@ -40,15 +40,15 @@ public class FrameResizer {
 
     ExecutorService executor = Executors.newFixedThreadPool(16);
 
-    ProgressBarBuilder pbb = new ProgressBarBuilder()
-        .setTaskName("Resizing frames")
-        .setInitialMax(frames.length)
-        .setStyle(ProgressBarStyle.ASCII);
+    ProgressBarBuilder pbb =
+        new ProgressBarBuilder()
+            .setTaskName("Resizing frames")
+            .setInitialMax(frames.length)
+            .setStyle(ProgressBarStyle.ASCII);
 
     try (var pb = pbb.build()) {
 
       List<Future<?>> futures = new ArrayList<>();
-
 
       for (File frame : frames) {
         var future = executor.submit(() -> resizeFrame(frame));
@@ -69,7 +69,6 @@ public class FrameResizer {
     }
 
     executor.shutdown();
-
   }
 
   private void resizeFrame(File frame) {
@@ -92,5 +91,4 @@ public class FrameResizer {
       throw new RuntimeException(e);
     }
   }
-
 }

@@ -42,10 +42,11 @@ public class FrameExtractor {
 
       double curMax = frameGrabber.getLengthInVideoFrames();
 
-      ProgressBarBuilder pbb = new ProgressBarBuilder()
-          .setTaskName("Extracting frames")
-          .setInitialMax((long) curMax)
-          .setStyle(ProgressBarStyle.ASCII);
+      ProgressBarBuilder pbb =
+          new ProgressBarBuilder()
+              .setTaskName("Extracting frames")
+              .setInitialMax((long) curMax)
+              .setStyle(ProgressBarStyle.ASCII);
 
       try (var pb = pbb.build()) {
 
@@ -76,7 +77,6 @@ public class FrameExtractor {
             futures.removeIf(Future::isDone);
             pb.stepBy(size - futures.size());
           }
-
         }
 
         executor.shutdown();

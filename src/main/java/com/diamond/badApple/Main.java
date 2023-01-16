@@ -55,16 +55,15 @@ public class Main {
     File outDir = new File("out");
 
     // delete all files in outDir
-    ProgressBarBuilder pbb = new ProgressBarBuilder()
-        .setTaskName("Cleaning up")
-        .setStyle(ProgressBarStyle.ASCII)
-        .setInitialMax(1);
+    ProgressBarBuilder pbb =
+        new ProgressBarBuilder()
+            .setTaskName("Cleaning up")
+            .setStyle(ProgressBarStyle.ASCII)
+            .setInitialMax(1);
 
     File[] files = outDir.listFiles();
     if (files != null) {
-      ProgressBar.wrap(files, pbb)
-          .parallel()
-          .forEach(File::delete);
+      ProgressBar.wrap(files, pbb).parallel().forEach(File::delete);
     }
   }
 }
