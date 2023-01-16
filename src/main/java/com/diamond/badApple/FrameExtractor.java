@@ -19,8 +19,8 @@ import org.bytedeco.javacv.Java2DFrameConverter;
 
 public class FrameExtractor {
 
-  private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(
-      FrameExtractor.class);
+  private static final org.slf4j.Logger logger =
+      org.slf4j.LoggerFactory.getLogger(FrameExtractor.class);
 
   private final File videoFile;
   private final File outDir;
@@ -45,10 +45,11 @@ public class FrameExtractor {
 
       double curMax = frameGrabber.getLengthInVideoFrames();
 
-      ProgressBarBuilder pbb = new ProgressBarBuilder()
-          .setTaskName("Extracting frames")
-          .setInitialMax((long) curMax)
-          .setStyle(ProgressBarStyle.ASCII);
+      ProgressBarBuilder pbb =
+          new ProgressBarBuilder()
+              .setTaskName("Extracting frames")
+              .setInitialMax((long) curMax)
+              .setStyle(ProgressBarStyle.ASCII);
 
       try (var pb = pbb.build()) {
 
@@ -79,9 +80,7 @@ public class FrameExtractor {
             futures.removeIf(Future::isDone);
             pb.stepBy(size - futures.size());
           }
-
         }
-
       }
     } catch (IOException e) {
       throw new RuntimeException(e);

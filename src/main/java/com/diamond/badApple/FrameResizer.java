@@ -33,10 +33,11 @@ public class FrameResizer {
       return;
     }
 
-    ProgressBarBuilder pbb = new ProgressBarBuilder()
-        .setTaskName("Resizing frames")
-        .setInitialMax(frames.length)
-        .setStyle(ProgressBarStyle.ASCII);
+    ProgressBarBuilder pbb =
+        new ProgressBarBuilder()
+            .setTaskName("Resizing frames")
+            .setInitialMax(frames.length)
+            .setStyle(ProgressBarStyle.ASCII);
 
     try (var pb = pbb.build()) {
       for (File frame : frames) {
@@ -60,5 +61,4 @@ public class FrameResizer {
       throw new RuntimeException(e);
     }
   }
-
 }
