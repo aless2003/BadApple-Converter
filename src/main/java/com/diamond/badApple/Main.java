@@ -18,7 +18,7 @@ public class Main {
   private static final String VIDEO_NAME = "amatsuki";
   private static final String VIDEO_FILE = "input/" + VIDEO_NAME + ".mp4";
   private static final String AUDIO_FILE = "input/" + VIDEO_NAME + ".mp3";
-  public static final int RESIZED_WIDTH = 200;
+  public static final int RESIZED_WIDTH = 300;
 
   public static void main(String[] args) throws IOException, JavaLayerException {
     File outDir = new File("out");
@@ -55,16 +55,15 @@ public class Main {
     File outDir = new File("out");
 
     // delete all files in outDir
-    ProgressBarBuilder pbb = new ProgressBarBuilder()
-        .setTaskName("Cleaning up")
-        .setStyle(ProgressBarStyle.ASCII)
-        .setInitialMax(1);
+    ProgressBarBuilder pbb =
+        new ProgressBarBuilder()
+            .setTaskName("Cleaning up")
+            .setStyle(ProgressBarStyle.ASCII)
+            .setInitialMax(1);
 
     File[] files = outDir.listFiles();
     if (files != null) {
-      ProgressBar.wrap(files, pbb)
-          .parallel()
-          .forEach(File::delete);
+      ProgressBar.wrap(files, pbb).parallel().forEach(File::delete);
     }
   }
 }
