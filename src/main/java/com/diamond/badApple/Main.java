@@ -20,9 +20,9 @@ public class Main {
 
   private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
-  private static String VIDEO_NAME = "amatsuki";
-  private static String VIDEO_FILE = "input/" + VIDEO_NAME + ".mp4";
-  private static String AUDIO_FILE = "input/" + VIDEO_NAME + ".mp3";
+  private static String VIDEO_NAME = "bofuri";
+  private static String VIDEO_FILE_PATH = "input/" + VIDEO_NAME + ".mp4";
+  private static String AUDIO_FILE_PATH = "input/" + VIDEO_NAME + ".mp3";
   public static int RESIZED_WIDTH = 100;
 
   public static void main(String[] args) throws IOException, JavaLayerException {
@@ -30,6 +30,7 @@ public class Main {
     var parser = initArgsParser();
 
     boolean audio;
+    boolean skipImageProcessing;
 
     try {
       Namespace parsedArgs = parser.parseArgs(args);
@@ -38,8 +39,8 @@ public class Main {
 
       if (temp != null) {
         VIDEO_NAME = temp;
-        VIDEO_FILE = "input/" + VIDEO_NAME + ".mp4";
-        AUDIO_FILE = "input/" + VIDEO_NAME + ".mp3";
+        VIDEO_FILE_PATH = "input/" + VIDEO_NAME + ".mp4";
+        AUDIO_FILE_PATH = "input/" + VIDEO_NAME + ".mp3";
       }
 
       Integer width = parsedArgs.getInt("width");
@@ -50,20 +51,30 @@ public class Main {
 
       audio = parsedArgs.getBoolean("audio");
 
+      skipImageProcessing = parsedArgs.getBoolean("skip");
+
     } catch (ArgumentParserException e) {
       parser.handleError(e);
       return;
     }
 
     File outDir = new File("out");
-    File audioFile = new File(AUDIO_FILE);
+    File audioFile = new File(AUDIO_FILE_PATH);
     logger.info("test");
-    cleanUp();
-    vidToFrames(outDir);
-    resizeFrames(outDir);
+
+
+    File videoFile = new File(VIDEO_FILE_PATH);
+
+    FrameExtractor frameExtractor = new FrameExtractor(videoFile, outDir);
+    if (!skipImageProcessing) {
+      cleanUp();
+      vidToFrames(outDir, frameExtractor);
+      resizeFrames(outDir);
+    }
     System.out.print(Ansi.ansi().eraseScreen());
     AudioPlayer player = new AudioPlayer(audioFile);
-    framesToStr(outDir, player, audio);
+    double fps = frameExtractor.getFrameRate();
+    framesToStr(outDir, player, audio, fps);
   }
 
   private static @NotNull ArgumentParser initArgsParser() {
@@ -84,6 +95,11 @@ public class Main {
         .type(Boolean.class)
         .setDefault(true);
 
+    parser.addArgument("-s", "--skip")
+        .help("Whether it should just play the last video")
+        .type(Boolean.class)
+        .setDefault(false);
+
     return parser;
   }
 
@@ -92,17 +108,15 @@ public class Main {
     resizer.resizeFrames();
   }
 
-  private static void framesToStr(File outDir, AudioPlayer player, boolean audio) {
-    FrameAsciiProcessor processor = new FrameAsciiProcessor(player, audio);
+  private static void framesToStr(File outDir, AudioPlayer player, boolean audio, double fps) {
+    FrameAsciiProcessor processor = new FrameAsciiProcessor(player, audio, fps);
     processor.convertAndPrint(outDir);
   }
 
-  private static void vidToFrames(File outDir) {
-    File badApple = new File(VIDEO_FILE);
+  private static void vidToFrames(File outDir, FrameExtractor extractor) {
     if (!outDir.exists() && !outDir.mkdirs()) {
       logger.error("Could not create output directory");
     }
-    var extractor = new FrameExtractor(badApple, outDir);
     extractor.extractFrames();
   }
 
@@ -118,7 +132,13 @@ public class Main {
 
     File[] files = outDir.listFiles();
     if (files != null) {
-      ProgressBar.wrap(files, pbb).parallel().forEach(File::delete);
+      ProgressBar.wrap(files, pbb)
+          .parallel()
+          .forEach(f -> {
+            if (!f.delete()) {
+              logger.error("Could not delete file: " + f.getName());
+            }
+          });
     }
   }
 }
