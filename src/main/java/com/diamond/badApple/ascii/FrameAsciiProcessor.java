@@ -27,10 +27,12 @@ public class FrameAsciiProcessor {
   private final AudioPlayer audioPlayer;
   private String[] asciiFrames;
   private int counter = 0;
+  private final boolean audio;
   ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
 
-  public FrameAsciiProcessor(AudioPlayer audioPlayer) {
+  public FrameAsciiProcessor(AudioPlayer audioPlayer, boolean audio) {
     this.audioPlayer = audioPlayer;
+    this.audio = audio;
   }
 
   public void convertAndPrint(File dir) {
@@ -40,10 +42,14 @@ public class FrameAsciiProcessor {
 
     StopWatch stopWatch = StopWatch.createStarted();
     Thread printThread = new Thread(() -> print(latch));
-    Thread audioThread = new Thread(() -> audioPlayer.play(latch));
 
     printThread.start();
-    audioThread.start();
+
+    if (audio) {
+      Thread audioThread = new Thread(() -> audioPlayer.play(latch));
+      audioThread.start();
+    }
+
 
     latch.countDown();
 
@@ -144,8 +150,4 @@ public class FrameAsciiProcessor {
     }
   }
 
-  private void clearScreen() {
-    System.out.print(Ansi.ansi().eraseScreen());
-    System.out.print(Ansi.ansi().cursor(0, 0));
-  }
 }

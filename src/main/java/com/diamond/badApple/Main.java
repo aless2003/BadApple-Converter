@@ -7,7 +7,12 @@ import javazoom.jl.decoder.JavaLayerException;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
+import net.sourceforge.argparse4j.ArgumentParsers;
+import net.sourceforge.argparse4j.inf.ArgumentParser;
+import net.sourceforge.argparse4j.inf.ArgumentParserException;
+import net.sourceforge.argparse4j.inf.Namespace;
 import org.fusesource.jansi.Ansi;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,12 +20,41 @@ public class Main {
 
   private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
-  private static final String VIDEO_NAME = "amatsuki";
-  private static final String VIDEO_FILE = "input/" + VIDEO_NAME + ".mp4";
-  private static final String AUDIO_FILE = "input/" + VIDEO_NAME + ".mp3";
-  public static final int RESIZED_WIDTH = 300;
+  private static String VIDEO_NAME = "amatsuki";
+  private static String VIDEO_FILE = "input/" + VIDEO_NAME + ".mp4";
+  private static String AUDIO_FILE = "input/" + VIDEO_NAME + ".mp3";
+  public static int RESIZED_WIDTH = 100;
 
   public static void main(String[] args) throws IOException, JavaLayerException {
+
+    var parser = initArgsParser();
+
+    boolean audio;
+
+    try {
+      Namespace parsedArgs = parser.parseArgs(args);
+
+      String temp = parsedArgs.getString("name");
+
+      if (temp != null) {
+        VIDEO_NAME = temp;
+        VIDEO_FILE = "input/" + VIDEO_NAME + ".mp4";
+        AUDIO_FILE = "input/" + VIDEO_NAME + ".mp3";
+      }
+
+      Integer width = parsedArgs.getInt("width");
+
+      if (width != null) {
+        RESIZED_WIDTH = width;
+      }
+
+      audio = parsedArgs.getBoolean("audio");
+
+    } catch (ArgumentParserException e) {
+      parser.handleError(e);
+      return;
+    }
+
     File outDir = new File("out");
     File audioFile = new File(AUDIO_FILE);
     logger.info("test");
@@ -29,7 +63,28 @@ public class Main {
     resizeFrames(outDir);
     System.out.print(Ansi.ansi().eraseScreen());
     AudioPlayer player = new AudioPlayer(audioFile);
-    framesToStr(outDir, player);
+    framesToStr(outDir, player, audio);
+  }
+
+  private static @NotNull ArgumentParser initArgsParser() {
+    ArgumentParser parser = ArgumentParsers.newFor("Video to ASCII converter")
+        .build();
+
+    parser.addArgument("-n", "--name")
+        .help("Name of the video and audio file")
+        .required(true);
+
+    parser.addArgument("-w", "--width")
+        .help("Width of the resized video")
+        .type(Integer.class)
+        .setDefault(RESIZED_WIDTH);
+
+    parser.addArgument("-a", "--audio")
+        .help("Whether to play music or not")
+        .type(Boolean.class)
+        .setDefault(true);
+
+    return parser;
   }
 
   private static void resizeFrames(File outDir) {
@@ -37,8 +92,8 @@ public class Main {
     resizer.resizeFrames();
   }
 
-  private static void framesToStr(File outDir, AudioPlayer player) {
-    FrameAsciiProcessor processor = new FrameAsciiProcessor(player);
+  private static void framesToStr(File outDir, AudioPlayer player, boolean audio) {
+    FrameAsciiProcessor processor = new FrameAsciiProcessor(player, audio);
     processor.convertAndPrint(outDir);
   }
 
