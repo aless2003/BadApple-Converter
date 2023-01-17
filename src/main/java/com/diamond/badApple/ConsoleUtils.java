@@ -2,6 +2,7 @@ package com.diamond.badApple;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import org.fusesource.jansi.Ansi;
 
 public class ConsoleUtils {
 
@@ -14,5 +15,10 @@ public class ConsoleUtils {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public static void clearScreen() {
+    System.out.print(Ansi.ansi().eraseScreen());
+    System.out.print(Ansi.ansi().cursor(0, 0));
   }
 }
