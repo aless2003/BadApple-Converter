@@ -62,7 +62,6 @@ public class Main {
     File audioFile = new File(AUDIO_FILE_PATH);
     logger.info("test");
 
-
     File videoFile = new File(VIDEO_FILE_PATH);
 
     FrameExtractor frameExtractor = new FrameExtractor(videoFile, outDir);
@@ -78,24 +77,24 @@ public class Main {
   }
 
   private static @NotNull ArgumentParser initArgsParser() {
-    ArgumentParser parser = ArgumentParsers.newFor("Video to ASCII converter")
-        .build();
+    ArgumentParser parser = ArgumentParsers.newFor("Video to ASCII converter").build();
 
-    parser.addArgument("-n", "--name")
-        .help("Name of the video and audio file")
-        .required(true);
+    parser.addArgument("-n", "--name").help("Name of the video and audio file").required(true);
 
-    parser.addArgument("-w", "--width")
+    parser
+        .addArgument("-w", "--width")
         .help("Width of the resized video")
         .type(Integer.class)
         .setDefault(RESIZED_WIDTH);
 
-    parser.addArgument("-a", "--audio")
+    parser
+        .addArgument("-a", "--audio")
         .help("Whether to play music or not")
         .type(Boolean.class)
         .setDefault(true);
 
-    parser.addArgument("-s", "--skip")
+    parser
+        .addArgument("-s", "--skip")
         .help("Whether it should just play the last video")
         .type(Boolean.class)
         .setDefault(false);
@@ -134,11 +133,12 @@ public class Main {
     if (files != null) {
       ProgressBar.wrap(files, pbb)
           .parallel()
-          .forEach(f -> {
-            if (!f.delete()) {
-              logger.error("Could not delete file: " + f.getName());
-            }
-          });
+          .forEach(
+              f -> {
+                if (!f.delete()) {
+                  logger.error("Could not delete file: " + f.getName());
+                }
+              });
     }
   }
 }

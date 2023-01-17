@@ -52,7 +52,6 @@ public class FrameAsciiProcessor {
       audioThread.start();
     }
 
-
     latch.countDown();
 
     try {
@@ -160,5 +159,4 @@ public class FrameAsciiProcessor {
 
     ConsoleUtils.clearScreen();
   }
-
 }
