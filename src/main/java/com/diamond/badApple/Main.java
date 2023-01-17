@@ -23,7 +23,7 @@ public class Main {
   private static String VIDEO_NAME = "bofuri";
   private static String VIDEO_FILE_PATH = "input/" + VIDEO_NAME + ".mp4";
   private static String AUDIO_FILE_PATH = "input/" + VIDEO_NAME + ".mp3";
-  public static int RESIZED_WIDTH = 100;
+  private static int RESIZED_WIDTH = 100;
 
   public static void main(String[] args) throws IOException, JavaLayerException {
 
