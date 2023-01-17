@@ -27,10 +27,14 @@ public class FrameAsciiProcessor {
   private final AudioPlayer audioPlayer;
   private String[] asciiFrames;
   private int counter = 0;
+  private final boolean audio;
   ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
+  private final long frameTime;
 
-  public FrameAsciiProcessor(AudioPlayer audioPlayer) {
+  public FrameAsciiProcessor(AudioPlayer audioPlayer, boolean audio, double fps) {
     this.audioPlayer = audioPlayer;
+    this.audio = audio;
+    this.frameTime = (long) (1000000 / fps);
   }
 
   public void convertAndPrint(File dir) {
@@ -40,10 +44,13 @@ public class FrameAsciiProcessor {
 
     StopWatch stopWatch = StopWatch.createStarted();
     Thread printThread = new Thread(() -> print(latch));
-    Thread audioThread = new Thread(() -> audioPlayer.play(latch));
 
     printThread.start();
-    audioThread.start();
+
+    if (audio) {
+      Thread audioThread = new Thread(() -> audioPlayer.play(latch));
+      audioThread.start();
+    }
 
     latch.countDown();
 
@@ -53,6 +60,7 @@ public class FrameAsciiProcessor {
       throw new RuntimeException(e);
     }
 
+    ConsoleUtils.clearScreen();
     logger.info("Finished in {} time", stopWatch.formatTime());
   }
 
@@ -62,9 +70,15 @@ public class FrameAsciiProcessor {
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
-    executor.scheduleAtFixedRate(this::printNext, 0, 33299, TimeUnit.MICROSECONDS);
+    executor.scheduleAtFixedRate(this::printNext, 0, frameTime, TimeUnit.MICROSECONDS);
     try {
-      executor.awaitTermination(1, TimeUnit.DAYS);
+
+      boolean terminate = executor.awaitTermination(1, TimeUnit.DAYS);
+
+      if (!terminate) {
+        throw new RuntimeException("Failed to terminate");
+      }
+
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
@@ -142,10 +156,7 @@ public class FrameAsciiProcessor {
       logger.error("Couldn't Process frames", e);
       throw new RuntimeException(e);
     }
-  }
 
-  private void clearScreen() {
-    System.out.print(Ansi.ansi().eraseScreen());
-    System.out.print(Ansi.ansi().cursor(0, 0));
+    ConsoleUtils.clearScreen();
   }
 }

@@ -86,6 +86,15 @@ public class FrameExtractor {
     }
   }
 
+  public double getFrameRate() {
+    try (FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(videoFile)) {
+      frameGrabber.start();
+      return frameGrabber.getFrameRate();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   private void convertFrameToImage(Frame nextFrame, int finalI) {
     try {
       BufferedImage image = convertFrameToImage(nextFrame);
