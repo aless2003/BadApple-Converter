@@ -33,8 +33,7 @@ public class YouTubeDownloader {
     try {
       logger.info("Downloading video...");
       YoutubeDLResponse response = YoutubeDL.execute(request);
-
-      System.out.println(response.getOut());
+      logger.info("Download complete!");
       if (response.getExitCode() != 0) {
         throw new RuntimeException("Failed to download video");
       }
@@ -88,6 +87,7 @@ public class YouTubeDownloader {
   private static class ConvertProgressListener implements EncoderProgressListener {
 
     ProgressBar bar;
+
     public ConvertProgressListener(ProgressBar bar) {
       this.bar = bar;
     }
