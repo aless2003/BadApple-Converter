@@ -105,7 +105,9 @@ public class YouTubeDownloader {
     }
 
     @Override
-    public void sourceInfo(MultimediaInfo info) {}
+    public void sourceInfo(MultimediaInfo info) {
+      logger.debug("Source info: {}", info);
+    }
 
     @Override
     public void progress(int permil) {
@@ -113,6 +115,8 @@ public class YouTubeDownloader {
     }
 
     @Override
-    public void message(String message) {}
+    public void message(String message) {
+      logger.debug("{}", message);
+    }
   }
 }
