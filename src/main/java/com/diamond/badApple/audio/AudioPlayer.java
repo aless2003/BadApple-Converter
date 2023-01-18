@@ -1,4 +1,4 @@
-package com.diamond.badApple;
+package com.diamond.badApple.audio;
 
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -6,8 +6,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.concurrent.CountDownLatch;
 import javazoom.jl.decoder.JavaLayerException;
-import javazoom.jl.player.AudioDevice;
-import javazoom.jl.player.JavaSoundAudioDevice;
 import javazoom.jl.player.Player;
 
 public class AudioPlayer {
@@ -16,8 +14,6 @@ public class AudioPlayer {
 
   public AudioPlayer(File audioFile) throws FileNotFoundException, JavaLayerException {
     BufferedInputStream in = new BufferedInputStream(new FileInputStream(audioFile));
-    // create Audio Device so it plays on standard output
-    AudioDevice device = new JavaSoundAudioDevice();
 
     player = new Player(in);
   }
