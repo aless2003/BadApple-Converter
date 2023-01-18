@@ -28,23 +28,36 @@ public class YouTubeDownloader {
     YoutubeDL.setExecutablePath("bin/youtube-dl");
     YoutubeDLRequest request = new YoutubeDLRequest(url, videoDir.getPath());
     output = output + ".mp4";
+
     request.setOption("output", output);
 
-    try {
-      logger.info("Downloading video...");
-      YoutubeDLResponse response = YoutubeDL.execute(request);
-      logger.info("Download complete!");
-      if (response.getExitCode() != 0) {
-        throw new RuntimeException("Failed to download video");
+    String videoFile = videoDir.getPath() + "/" + output;
+
+    File file = new File(videoFile);
+
+    if (!file.exists()) {
+      try {
+        logger.info("Downloading video...");
+        YoutubeDLResponse response = YoutubeDL.execute(request);
+        logger.info("Download complete!");
+        if (response.getExitCode() != 0) {
+          throw new RuntimeException("Failed to download video");
+        }
+      } catch (YoutubeDLException e) {
+        logger.error("Couldn't download Video", e);
       }
-
-      String videoFile = videoDir.getPath() + "/" + output;
-
-      convertMp4toMp3(videoFile, audioFile);
-
-    } catch (YoutubeDLException e) {
-      throw new RuntimeException(e);
+    } else {
+      logger.info("Video {} already exists, skipping download", output);
     }
+
+    File audio = new File(audioFile);
+
+    if (audio.exists()) {
+      logger.info("Audio {} already exists, skipping conversion", audioFile);
+      return;
+    }
+
+    convertMp4toMp3(videoFile, audioFile);
   }
 
   private void convertMp4toMp3(String videoPath, String audioPath) {
@@ -92,7 +105,8 @@ public class YouTubeDownloader {
     }
 
     @Override
-    public void sourceInfo(MultimediaInfo info) {}
+    public void sourceInfo(MultimediaInfo info) {
+    }
 
     @Override
     public void progress(int permil) {
@@ -100,6 +114,7 @@ public class YouTubeDownloader {
     }
 
     @Override
-    public void message(String message) {}
+    public void message(String message) {
+    }
   }
 }
