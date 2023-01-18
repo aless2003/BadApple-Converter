@@ -82,7 +82,6 @@ public class Main {
     }
 
     File audioFile = new File(AUDIO_FILE_PATH);
-    logger.info("test");
 
     File videoFile = new File(VIDEO_FILE_PATH);
 
