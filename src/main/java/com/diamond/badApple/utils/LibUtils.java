@@ -15,7 +15,6 @@ public class LibUtils {
 
   private static final Logger logger = LoggerFactory.getLogger(LibUtils.class);
 
-
   private LibUtils() {
     throw new IllegalStateException("Utility class");
   }
@@ -53,7 +52,6 @@ public class LibUtils {
     }
   }
 
-
   public static String getYouTubeDLName() {
     if (OSUtils.getOS() == OSType.WINDOWS) {
       return "youtube-dl.exe";
@@ -81,5 +79,4 @@ public class LibUtils {
       throw new RuntimeException(e);
     }
   }
-
 }

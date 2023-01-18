@@ -15,6 +15,5 @@ public class OSUtils {
     } else {
       return OSType.UNKNOWN;
     }
-
   }
 }

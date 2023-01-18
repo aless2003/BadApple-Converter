@@ -73,8 +73,6 @@ public class Main {
 
     LibUtils.install();
 
-
-
     if (downloadUrl != null && !downloadUrl.isEmpty()) {
       File inputDir = new File("input");
       YouTubeDownloader downloader = new YouTubeDownloader();
@@ -102,9 +100,7 @@ public class Main {
   private static @NotNull ArgumentParser initArgsParser() {
     ArgumentParser parser = ArgumentParsers.newFor("Video to ASCII converter").build();
 
-    parser.addArgument("-n", "--name")
-        .help("Name of the video and audio file")
-        .required(true);
+    parser.addArgument("-n", "--name").help("Name of the video and audio file").required(true);
 
     parser
         .addArgument("-w", "--width")
@@ -124,8 +120,7 @@ public class Main {
         .type(Boolean.class)
         .setDefault(false);
 
-    parser.addArgument("-u", "--url")
-        .help("The YouTube URL to download");
+    parser.addArgument("-u", "--url").help("The YouTube URL to download");
 
     return parser;
   }

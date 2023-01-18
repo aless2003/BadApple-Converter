@@ -45,16 +45,15 @@ public class YouTubeDownloader {
     } catch (YoutubeDLException e) {
       throw new RuntimeException(e);
     }
-
   }
-
 
   private void convertMp4toMp3(String videoPath, String audioPath) {
 
-    ProgressBarBuilder pbb = new ProgressBarBuilder()
-        .setTaskName("Converting video to audio")
-        .setStyle(ProgressBarStyle.ASCII)
-        .setInitialMax(1000);
+    ProgressBarBuilder pbb =
+        new ProgressBarBuilder()
+            .setTaskName("Converting video to audio")
+            .setStyle(ProgressBarStyle.ASCII)
+            .setInitialMax(1000);
 
     try (FFmpegFrameGrabber grabber = new FFmpegFrameGrabber(videoPath);
         ProgressBar pb = pbb.build()) {
@@ -93,9 +92,7 @@ public class YouTubeDownloader {
     }
 
     @Override
-    public void sourceInfo(MultimediaInfo info) {
-
-    }
+    public void sourceInfo(MultimediaInfo info) {}
 
     @Override
     public void progress(int permil) {
@@ -103,9 +100,6 @@ public class YouTubeDownloader {
     }
 
     @Override
-    public void message(String message) {
-
-    }
+    public void message(String message) {}
   }
-
 }
