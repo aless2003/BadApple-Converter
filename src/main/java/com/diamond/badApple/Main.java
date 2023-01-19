@@ -1,6 +1,14 @@
 package com.diamond.badApple;
 
+import static org.bytedeco.ffmpeg.global.avutil.AV_LOG_FATAL;
+import static org.bytedeco.ffmpeg.global.avutil.av_log_set_level;
+
 import com.diamond.badApple.ascii.FrameAsciiProcessor;
+import com.diamond.badApple.audio.AudioPlayer;
+import com.diamond.badApple.utils.LibUtils;
+import com.diamond.badApple.video.FrameExtractor;
+import com.diamond.badApple.video.FrameResizer;
+import com.diamond.badApple.video.YouTubeDownloader;
 import java.io.File;
 import java.io.IOException;
 import javazoom.jl.decoder.JavaLayerException;
@@ -27,10 +35,13 @@ public class Main {
 
   public static void main(String[] args) throws IOException, JavaLayerException {
 
+    av_log_set_level(AV_LOG_FATAL);
+
     var parser = initArgsParser();
 
     boolean audio;
     boolean skipImageProcessing;
+    String downloadUrl;
 
     try {
       Namespace parsedArgs = parser.parseArgs(args);
@@ -53,16 +64,26 @@ public class Main {
 
       skipImageProcessing = parsedArgs.getBoolean("skip");
 
+      downloadUrl = parsedArgs.getString("url");
+
     } catch (ArgumentParserException e) {
       parser.handleError(e);
       return;
     }
 
-    File outDir = new File("out");
+    LibUtils.install();
+
+    if (downloadUrl != null && !downloadUrl.isEmpty()) {
+      File inputDir = new File("input");
+      YouTubeDownloader downloader = new YouTubeDownloader();
+      downloader.download(downloadUrl, VIDEO_NAME, inputDir, AUDIO_FILE_PATH);
+    }
+
     File audioFile = new File(AUDIO_FILE_PATH);
-    logger.info("test");
 
     File videoFile = new File(VIDEO_FILE_PATH);
+
+    File outDir = new File("out");
 
     FrameExtractor frameExtractor = new FrameExtractor(videoFile, outDir);
     if (!skipImageProcessing) {
@@ -98,6 +119,8 @@ public class Main {
         .help("Whether it should just play the last video")
         .type(Boolean.class)
         .setDefault(false);
+
+    parser.addArgument("-u", "--url").help("The YouTube URL to download");
 
     return parser;
   }

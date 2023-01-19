@@ -1,4 +1,4 @@
-package com.diamond.badApple;
+package com.diamond.badApple.utils;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;

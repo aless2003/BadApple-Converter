@@ -1,4 +1,4 @@
-package com.diamond.badApple;
+package com.diamond.badApple.video;
 
 import java.awt.image.BufferedImage;
 import java.io.File;

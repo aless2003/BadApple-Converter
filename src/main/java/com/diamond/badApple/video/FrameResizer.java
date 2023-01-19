@@ -1,4 +1,4 @@
-package com.diamond.badApple;
+package com.diamond.badApple.video;
 
 import static java.awt.Image.SCALE_SMOOTH;
 import static java.awt.image.BufferedImage.TYPE_INT_RGB;

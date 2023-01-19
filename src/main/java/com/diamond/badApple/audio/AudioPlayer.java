@@ -1,4 +1,4 @@
-package com.diamond.badApple;
+package com.diamond.badApple.audio;
 
 import java.io.BufferedInputStream;
 import java.io.File;

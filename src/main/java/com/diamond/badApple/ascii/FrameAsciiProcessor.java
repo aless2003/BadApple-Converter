@@ -1,7 +1,7 @@
 package com.diamond.badApple.ascii;
 
-import com.diamond.badApple.AudioPlayer;
-import com.diamond.badApple.ConsoleUtils;
+import com.diamond.badApple.audio.AudioPlayer;
+import com.diamond.badApple.utils.ConsoleUtils;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
