@@ -39,9 +39,7 @@ public class Main {
 
     var parser = initArgsParser();
 
-    boolean audio;
-    boolean skipImageProcessing;
-    String downloadUrl;
+    Config config = new Config();
 
     try {
       Namespace parsedArgs = parser.parseArgs(args);
@@ -60,12 +58,13 @@ public class Main {
         RESIZED_WIDTH = width;
       }
 
-      audio = parsedArgs.getBoolean("audio");
+      config.setAudio(parsedArgs.getBoolean("audio"));
 
-      skipImageProcessing = parsedArgs.getBoolean("skip");
+      config.setSkipImageProcessing(parsedArgs.getBoolean("skip"));
 
-      downloadUrl = parsedArgs.getString("url");
+      config.setDownloadUrl(parsedArgs.getString("url"));
 
+      config.setColor(parsedArgs.getBoolean("color"));
     } catch (ArgumentParserException e) {
       parser.handleError(e);
       return;
@@ -73,10 +72,10 @@ public class Main {
 
     LibUtils.install();
 
-    if (downloadUrl != null && !downloadUrl.isEmpty()) {
+    if (config.getDownloadUrl() != null && !config.getDownloadUrl().isEmpty()) {
       File inputDir = new File("input");
       YouTubeDownloader downloader = new YouTubeDownloader();
-      downloader.download(downloadUrl, VIDEO_NAME, inputDir, AUDIO_FILE_PATH);
+      downloader.download(config.getDownloadUrl(), VIDEO_NAME, inputDir, AUDIO_FILE_PATH);
     }
 
     File audioFile = new File(AUDIO_FILE_PATH);
@@ -86,7 +85,7 @@ public class Main {
     File outDir = new File("out");
 
     FrameExtractor frameExtractor = new FrameExtractor(videoFile, outDir);
-    if (!skipImageProcessing) {
+    if (!config.isSkipImageProcessing()) {
       cleanUp();
       vidToFrames(outDir, frameExtractor);
       resizeFrames(outDir);
@@ -94,7 +93,7 @@ public class Main {
     System.out.print(Ansi.ansi().eraseScreen());
     AudioPlayer player = new AudioPlayer(audioFile);
     double fps = frameExtractor.getFrameRate();
-    framesToStr(outDir, player, audio, fps);
+    framesToStr(outDir, player, fps, config);
   }
 
   private static @NotNull ArgumentParser initArgsParser() {
@@ -120,7 +119,13 @@ public class Main {
         .type(Boolean.class)
         .setDefault(false);
 
-    parser.addArgument("-u", "--url").help("The YouTube URL to download");
+    parser.addArgument("-u", "--url")
+        .help("The YouTube URL to download");
+
+    parser.addArgument("-c", "--color")
+        .help("Whether to use color or not (Warning: this can dramatically decrease performance)")
+        .type(Boolean.class)
+        .setDefault(false);
 
     return parser;
   }
@@ -130,8 +135,8 @@ public class Main {
     resizer.resizeFrames();
   }
 
-  private static void framesToStr(File outDir, AudioPlayer player, boolean audio, double fps) {
-    FrameAsciiProcessor processor = new FrameAsciiProcessor(player, audio, fps);
+  private static void framesToStr(File outDir, AudioPlayer player, double fps, Config config) {
+    FrameAsciiProcessor processor = new FrameAsciiProcessor(player, fps, config);
     processor.convertAndPrint(outDir);
   }
 
