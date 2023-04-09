@@ -6,8 +6,7 @@ import static org.bytedeco.ffmpeg.global.avutil.av_log_set_level;
 import com.diamond.badApple.ascii.FrameAsciiProcessor;
 import com.diamond.badApple.audio.AudioPlayer;
 import com.diamond.badApple.utils.LibUtils;
-import com.diamond.badApple.video.FrameExtractor;
-import com.diamond.badApple.video.FrameResizer;
+import com.diamond.badApple.video.FrameProcessor;
 import com.diamond.badApple.video.YouTubeDownloader;
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +30,7 @@ public class Main {
   private static String VIDEO_NAME = "bofuri";
   private static String VIDEO_FILE_PATH = "input/" + VIDEO_NAME + ".mp4";
   private static String AUDIO_FILE_PATH = "input/" + VIDEO_NAME + ".mp3";
-  private static int RESIZED_WIDTH = 100;
+  private static final int RESIZED_WIDTH = 100;
 
   public static void main(String[] args) throws IOException, JavaLayerException {
 
@@ -39,9 +38,7 @@ public class Main {
 
     var parser = initArgsParser();
 
-    boolean audio;
-    boolean skipImageProcessing;
-    String downloadUrl;
+    Config config = new Config();
 
     try {
       Namespace parsedArgs = parser.parseArgs(args);
@@ -54,18 +51,17 @@ public class Main {
         AUDIO_FILE_PATH = "input/" + VIDEO_NAME + ".mp3";
       }
 
-      Integer width = parsedArgs.getInt("width");
+      int width = parsedArgs.getInt("width");
 
-      if (width != null) {
-        RESIZED_WIDTH = width;
-      }
+      config.setWidth(width);
 
-      audio = parsedArgs.getBoolean("audio");
+      config.setAudio(parsedArgs.getBoolean("audio"));
 
-      skipImageProcessing = parsedArgs.getBoolean("skip");
+      config.setSkipImageProcessing(parsedArgs.getBoolean("skip"));
 
-      downloadUrl = parsedArgs.getString("url");
+      config.setDownloadUrl(parsedArgs.getString("url"));
 
+      config.setColor(parsedArgs.getBoolean("color"));
     } catch (ArgumentParserException e) {
       parser.handleError(e);
       return;
@@ -73,10 +69,10 @@ public class Main {
 
     LibUtils.install();
 
-    if (downloadUrl != null && !downloadUrl.isEmpty()) {
+    if (config.getDownloadUrl() != null && !config.getDownloadUrl().isEmpty()) {
       File inputDir = new File("input");
       YouTubeDownloader downloader = new YouTubeDownloader();
-      downloader.download(downloadUrl, VIDEO_NAME, inputDir, AUDIO_FILE_PATH);
+      downloader.download(config.getDownloadUrl(), VIDEO_NAME, inputDir, AUDIO_FILE_PATH);
     }
 
     File audioFile = new File(AUDIO_FILE_PATH);
@@ -85,16 +81,15 @@ public class Main {
 
     File outDir = new File("out");
 
-    FrameExtractor frameExtractor = new FrameExtractor(videoFile, outDir);
-    if (!skipImageProcessing) {
+    FrameProcessor frameProcessor = new FrameProcessor(videoFile, outDir, config.getWidth());
+    if (!config.isSkipImageProcessing()) {
       cleanUp();
-      vidToFrames(outDir, frameExtractor);
-      resizeFrames(outDir);
+      vidToFrames(outDir, frameProcessor);
     }
     System.out.print(Ansi.ansi().eraseScreen());
     AudioPlayer player = new AudioPlayer(audioFile);
-    double fps = frameExtractor.getFrameRate();
-    framesToStr(outDir, player, audio, fps);
+    double fps = frameProcessor.getFrameRate();
+    framesToStr(outDir, player, fps, config);
   }
 
   private static @NotNull ArgumentParser initArgsParser() {
@@ -122,24 +117,25 @@ public class Main {
 
     parser.addArgument("-u", "--url").help("The YouTube URL to download");
 
+    parser
+        .addArgument("-c", "--color")
+        .help("Whether to use color or not (Warning: this can dramatically decrease performance)")
+        .type(Boolean.class)
+        .setDefault(false);
+
     return parser;
   }
 
-  private static void resizeFrames(File outDir) {
-    FrameResizer resizer = new FrameResizer(outDir, RESIZED_WIDTH);
-    resizer.resizeFrames();
-  }
-
-  private static void framesToStr(File outDir, AudioPlayer player, boolean audio, double fps) {
-    FrameAsciiProcessor processor = new FrameAsciiProcessor(player, audio, fps);
+  private static void framesToStr(File outDir, AudioPlayer player, double fps, Config config) {
+    FrameAsciiProcessor processor = new FrameAsciiProcessor(player, fps, config);
     processor.convertAndPrint(outDir);
   }
 
-  private static void vidToFrames(File outDir, FrameExtractor extractor) {
+  private static void vidToFrames(File outDir, FrameProcessor extractor) {
     if (!outDir.exists() && !outDir.mkdirs()) {
       logger.error("Could not create output directory");
     }
-    extractor.extractFrames();
+    extractor.processFrames();
   }
 
   private static void cleanUp() {
