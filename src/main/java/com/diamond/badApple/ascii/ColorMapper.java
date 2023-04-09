@@ -14,7 +14,7 @@ public class ColorMapper {
     int rgb = 255;
     int step = 60;
     int rounds = rgb / step;
-    
+
     for (int i = 0; i < rounds; i++) {
       for (int j = 0; j < rounds; j++) {
         for (int k = 0; k < rounds; k++) {
@@ -54,5 +54,4 @@ public class ColorMapper {
 
     return Math.sqrt(rSquare + gSquare + bSquare);
   }
-
 }
