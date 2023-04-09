@@ -1,13 +1,20 @@
 package com.diamond.badApple.video;
 
+import static java.awt.Image.SCALE_SMOOTH;
+import static java.awt.image.BufferedImage.TYPE_INT_RGB;
+
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.imageio.ImageIO;
 import me.tongfei.progressbar.ProgressBarBuilder;
 import me.tongfei.progressbar.ProgressBarStyle;
@@ -21,16 +28,21 @@ public class FrameExtractor {
 
   private final File videoFile;
   private final File outDir;
+  private final int resizedWidth;
+  private final AtomicInteger frameNumber = new AtomicInteger(0);
 
-  public FrameExtractor(File videoFile, File outDir) {
+  public FrameExtractor(File videoFile, File outDir, int resizedWidth) {
     this.videoFile = videoFile;
     this.outDir = outDir;
+    this.resizedWidth = resizedWidth;
   }
 
   private BufferedImage convertFrameToImage(Frame frame) {
     BufferedImage image;
     try (Java2DFrameConverter converter = new Java2DFrameConverter()) {
       image = converter.convert(frame);
+    } catch (java.lang.Exception e) {
+      throw new RuntimeException(e);
     }
     return image;
   }
@@ -48,38 +60,52 @@ public class FrameExtractor {
               .setInitialMax((long) curMax)
               .setStyle(ProgressBarStyle.ASCII);
 
-      try (var pb = pbb.build()) {
+      ProgressBarBuilder resizeBar = new ProgressBarBuilder()
+          .setTaskName("Resizing frames")
+          .setInitialMax((long) curMax)
+          .setStyle(ProgressBarStyle.ASCII);
 
-        ExecutorService executor = Executors.newFixedThreadPool(16);
+      try (var pb = pbb.build(); var resizePb = resizeBar.build()) {
+
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(16);
         List<Future<?>> futures = new ArrayList<>();
 
-        int numPerRound = 100;
-        int numRounds = (int) Math.ceil(curMax / numPerRound);
+        for (int i = 0; i < executor.getMaximumPoolSize(); i++) {
+          var future = executor.submit(() -> {
+            FrameEntry entry = getNextFrameFromVideo(frameGrabber);
+            while (entry != null) {
+              var extractedFrameImage = convertFrameToImage(entry);
 
-        for (int i = 0; i < numRounds; i++) {
-          for (int j = 0; j < numPerRound; j++) {
-            Frame nextFrame = getNextFrame(frameGrabber);
+              if (extractedFrameImage == null) {
+                return;
+              }
+              pb.step();
 
-            if (nextFrame == null) {
-              break;
+              resizeFrame(extractedFrameImage, entry.getFrameNumber());
+              resizePb.step();
+              entry = getNextFrameFromVideo(frameGrabber);
             }
+          });
+          futures.add(future);
+        }
 
-            Frame convFrame = nextFrame.clone();
 
-            int frameNumber = numPerRound * i + j;
-            var future = executor.submit(() -> convertFrameToImage(convFrame, frameNumber));
-
-            futures.add(future);
-          }
-
-          while (!futures.isEmpty()) {
-            int size = futures.size();
-            futures.removeIf(Future::isDone);
-            pb.stepBy(size - futures.size());
-          }
+        while (futures.stream().anyMatch(future -> !future.isDone())) {
+          Thread.sleep(100);
         }
 
         executor.shutdown();
+
+        futures.forEach(future -> {
+          try {
+            future.get();
+          } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+          }
+        });
+
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -95,23 +121,55 @@ public class FrameExtractor {
     }
   }
 
-  private void convertFrameToImage(Frame nextFrame, int finalI) {
+  private BufferedImage convertFrameToImage(FrameEntry entry) {
+    BufferedImage image = convertFrameToImage(entry.getFrame());
+    entry.getFrame().close();
+    return image;
+  }
+
+  private FrameEntry getNextFrameFromVideo(FFmpegFrameGrabber grabber) {
     try {
-      BufferedImage image = convertFrameToImage(nextFrame);
-      nextFrame.close();
-      String name = String.format("frame-%d.png", finalI);
-      ImageIO.write(image, "png", new File(outDir, name));
-    } catch (IOException e) {
+      Frame videoFrame = new Frame();
+      do {
+        videoFrame.close();
+        videoFrame = grabber.grabImage();
+
+        if (videoFrame != null) {
+          videoFrame = videoFrame.clone();
+        }
+
+        if (videoFrame == null) {
+          return null;
+        }
+      } while (videoFrame.type != Type.VIDEO);
+
+      int number = frameNumber.getAndIncrement();
+
+      return new FrameEntry(videoFrame, number);
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
 
-  public Frame getNextFrame(FFmpegFrameGrabber grabber) throws Exception {
-    Frame frame = new Frame();
-    frame.type = Type.SUBTITLE;
-    while (frame != null && frame.type != Type.VIDEO) {
-      frame = grabber.grab();
+  private void resizeFrame(BufferedImage frame, int frameNumber) {
+    try {
+      float aspectRatio = (float) frame.getWidth() / frame.getHeight();
+      int newWidth = resizedWidth;
+      int newHeight = (int) (newWidth / aspectRatio);
+
+      Image resized = frame.getScaledInstance(newWidth, newHeight, SCALE_SMOOTH);
+
+      BufferedImage scaledImage = new BufferedImage(newWidth, newHeight, TYPE_INT_RGB);
+
+      Graphics2D graphics = scaledImage.createGraphics();
+      graphics.drawImage(resized, 0, 0, null);
+      graphics.dispose();
+
+      File out = new File(outDir, String.format("frame-%d.png", frameNumber));
+
+      ImageIO.write(scaledImage, "png", out);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
-    return frame;
   }
 }

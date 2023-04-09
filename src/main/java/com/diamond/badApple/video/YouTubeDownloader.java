@@ -26,14 +26,14 @@ public class YouTubeDownloader {
 
   public void download(String url, String output, File videoDir, String audioFile) {
     YoutubeDL.setExecutablePath("bin/youtube-dl");
-    YoutubeDLRequest request = new YoutubeDLRequest(url, videoDir.getPath());
-    output = output + ".mp4";
+    YoutubeDLRequest request = new YoutubeDLRequest(url);
+    output = videoDir.getPath() + "/" + output + ".mp4";
 
     request.setOption("output", output);
+    //format to 720p mp4
+    request.setOption("format", "22");
 
-    String videoFile = videoDir.getPath() + "/" + output;
-
-    File file = new File(videoFile);
+    File file = new File(output);
 
     if (!file.exists()) {
       try {
@@ -57,7 +57,7 @@ public class YouTubeDownloader {
       return;
     }
 
-    convertMp4toMp3(videoFile, audioFile);
+    convertMp4toMp3(output, audioFile);
   }
 
   private void convertMp4toMp3(String videoPath, String audioPath) {
