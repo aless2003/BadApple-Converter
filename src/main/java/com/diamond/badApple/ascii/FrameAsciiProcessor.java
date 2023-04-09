@@ -188,7 +188,8 @@ public class FrameAsciiProcessor {
 
     try (ProgressBar pb = builderPB.build()) {
 
-      for (int i = 0, framesSize = frames.size(); i < framesSize; i++) {
+      int framesSize = frames.size();
+      for (int i = 0; i < framesSize; i++) {
         File frame = frames.get(i);
         BufferedImage image = ImageIO.read(frame);
 
