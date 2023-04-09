@@ -24,14 +24,14 @@ import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Frame.Type;
 import org.bytedeco.javacv.Java2DFrameConverter;
 
-public class FrameExtractor {
+public class FrameProcessor {
 
   private final File videoFile;
   private final File outDir;
   private final int resizedWidth;
   private final AtomicInteger frameNumber = new AtomicInteger(0);
 
-  public FrameExtractor(File videoFile, File outDir, int resizedWidth) {
+  public FrameProcessor(File videoFile, File outDir, int resizedWidth) {
     this.videoFile = videoFile;
     this.outDir = outDir;
     this.resizedWidth = resizedWidth;
@@ -47,7 +47,7 @@ public class FrameExtractor {
     return image;
   }
 
-  public void extractFrames() {
+  public void processFrames() {
     try (FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(videoFile)) {
 
       frameGrabber.start();

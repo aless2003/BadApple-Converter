@@ -6,11 +6,10 @@ import static org.bytedeco.ffmpeg.global.avutil.av_log_set_level;
 import com.diamond.badApple.ascii.FrameAsciiProcessor;
 import com.diamond.badApple.audio.AudioPlayer;
 import com.diamond.badApple.utils.LibUtils;
-import com.diamond.badApple.video.FrameExtractor;
+import com.diamond.badApple.video.FrameProcessor;
 import com.diamond.badApple.video.YouTubeDownloader;
 import java.io.File;
 import java.io.IOException;
-import java.util.Objects;
 import javazoom.jl.decoder.JavaLayerException;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarBuilder;
@@ -31,7 +30,7 @@ public class Main {
   private static String VIDEO_NAME = "bofuri";
   private static String VIDEO_FILE_PATH = "input/" + VIDEO_NAME + ".mp4";
   private static String AUDIO_FILE_PATH = "input/" + VIDEO_NAME + ".mp3";
-  private static int RESIZED_WIDTH = 100;
+  private static final int RESIZED_WIDTH = 100;
 
   public static void main(String[] args) throws IOException, JavaLayerException {
 
@@ -52,9 +51,9 @@ public class Main {
         AUDIO_FILE_PATH = "input/" + VIDEO_NAME + ".mp3";
       }
 
-      Integer width = parsedArgs.getInt("width");
+      int width = parsedArgs.getInt("width");
 
-      config.setWidth(Objects.requireNonNullElse(width, 100));
+      config.setWidth(width);
 
       config.setAudio(parsedArgs.getBoolean("audio"));
 
@@ -82,14 +81,14 @@ public class Main {
 
     File outDir = new File("out");
 
-    FrameExtractor frameExtractor = new FrameExtractor(videoFile, outDir, config.getWidth());
+    FrameProcessor frameProcessor = new FrameProcessor(videoFile, outDir, config.getWidth());
     if (!config.isSkipImageProcessing()) {
       cleanUp();
-      vidToFrames(outDir, frameExtractor);
+      vidToFrames(outDir, frameProcessor);
     }
     System.out.print(Ansi.ansi().eraseScreen());
     AudioPlayer player = new AudioPlayer(audioFile);
-    double fps = frameExtractor.getFrameRate();
+    double fps = frameProcessor.getFrameRate();
     framesToStr(outDir, player, fps, config);
   }
 
@@ -132,11 +131,11 @@ public class Main {
     processor.convertAndPrint(outDir);
   }
 
-  private static void vidToFrames(File outDir, FrameExtractor extractor) {
+  private static void vidToFrames(File outDir, FrameProcessor extractor) {
     if (!outDir.exists() && !outDir.mkdirs()) {
       logger.error("Could not create output directory");
     }
-    extractor.extractFrames();
+    extractor.processFrames();
   }
 
   private static void cleanUp() {
