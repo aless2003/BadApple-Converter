@@ -7,10 +7,10 @@ import com.diamond.badApple.ascii.FrameAsciiProcessor;
 import com.diamond.badApple.audio.AudioPlayer;
 import com.diamond.badApple.utils.LibUtils;
 import com.diamond.badApple.video.FrameExtractor;
-import com.diamond.badApple.video.FrameResizer;
 import com.diamond.badApple.video.YouTubeDownloader;
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 import javazoom.jl.decoder.JavaLayerException;
 import me.tongfei.progressbar.ProgressBar;
 import me.tongfei.progressbar.ProgressBarBuilder;
@@ -54,9 +54,7 @@ public class Main {
 
       Integer width = parsedArgs.getInt("width");
 
-      if (width != null) {
-        RESIZED_WIDTH = width;
-      }
+      config.setWidth(Objects.requireNonNullElse(width, 100));
 
       config.setAudio(parsedArgs.getBoolean("audio"));
 
@@ -84,11 +82,10 @@ public class Main {
 
     File outDir = new File("out");
 
-    FrameExtractor frameExtractor = new FrameExtractor(videoFile, outDir);
+    FrameExtractor frameExtractor = new FrameExtractor(videoFile, outDir, config.getWidth());
     if (!config.isSkipImageProcessing()) {
       cleanUp();
       vidToFrames(outDir, frameExtractor);
-      resizeFrames(outDir);
     }
     System.out.print(Ansi.ansi().eraseScreen());
     AudioPlayer player = new AudioPlayer(audioFile);
@@ -128,11 +125,6 @@ public class Main {
         .setDefault(false);
 
     return parser;
-  }
-
-  private static void resizeFrames(File outDir) {
-    FrameResizer resizer = new FrameResizer(outDir, RESIZED_WIDTH);
-    resizer.resizeFrames();
   }
 
   private static void framesToStr(File outDir, AudioPlayer player, double fps, Config config) {
