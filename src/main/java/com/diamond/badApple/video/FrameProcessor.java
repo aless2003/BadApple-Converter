@@ -60,35 +60,38 @@ public class FrameProcessor {
               .setInitialMax((long) curMax)
               .setStyle(ProgressBarStyle.ASCII);
 
-      ProgressBarBuilder resizeBar = new ProgressBarBuilder()
-          .setTaskName("Resizing frames")
-          .setInitialMax((long) curMax)
-          .setStyle(ProgressBarStyle.ASCII);
+      ProgressBarBuilder resizeBar =
+          new ProgressBarBuilder()
+              .setTaskName("Resizing frames")
+              .setInitialMax((long) curMax)
+              .setStyle(ProgressBarStyle.ASCII);
 
-      try (var pb = pbb.build(); var resizePb = resizeBar.build()) {
+      try (var pb = pbb.build();
+          var resizePb = resizeBar.build()) {
 
         ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(16);
         List<Future<?>> futures = new ArrayList<>();
 
         for (int i = 0; i < executor.getMaximumPoolSize(); i++) {
-          var future = executor.submit(() -> {
-            FrameEntry entry = getNextFrameFromVideo(frameGrabber);
-            while (entry != null) {
-              var extractedFrameImage = convertFrameToImage(entry);
+          var future =
+              executor.submit(
+                  () -> {
+                    FrameEntry entry = getNextFrameFromVideo(frameGrabber);
+                    while (entry != null) {
+                      var extractedFrameImage = convertFrameToImage(entry);
 
-              if (extractedFrameImage == null) {
-                return;
-              }
-              pb.step();
+                      if (extractedFrameImage == null) {
+                        return;
+                      }
+                      pb.step();
 
-              resizeFrame(extractedFrameImage, entry.getFrameNumber());
-              resizePb.step();
-              entry = getNextFrameFromVideo(frameGrabber);
-            }
-          });
+                      resizeFrame(extractedFrameImage, entry.getFrameNumber());
+                      resizePb.step();
+                      entry = getNextFrameFromVideo(frameGrabber);
+                    }
+                  });
           futures.add(future);
         }
-
 
         while (futures.stream().anyMatch(future -> !future.isDone())) {
           Thread.sleep(100);
@@ -96,13 +99,14 @@ public class FrameProcessor {
 
         executor.shutdown();
 
-        futures.forEach(future -> {
-          try {
-            future.get();
-          } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
-          }
-        });
+        futures.forEach(
+            future -> {
+              try {
+                future.get();
+              } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+              }
+            });
 
       } catch (InterruptedException e) {
         throw new RuntimeException(e);

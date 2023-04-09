@@ -30,7 +30,7 @@ public class YouTubeDownloader {
     output = videoDir.getPath() + "/" + output + ".mp4";
 
     request.setOption("output", output);
-    //format to 720p mp4
+    // format to 720p mp4
     request.setOption("format", "22");
 
     File file = new File(output);

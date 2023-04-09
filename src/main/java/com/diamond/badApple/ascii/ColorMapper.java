@@ -14,7 +14,7 @@ public class ColorMapper {
     int rgb = 255;
     int step = 60;
     int rounds = rgb / step;
-    
+
     for (int i = 0; i < rounds; i++) {
       for (int j = 0; j < rounds; j++) {
         for (int k = 0; k < rounds; k++) {
@@ -110,7 +110,7 @@ public class ColorMapper {
     return lab;
   }
 
-    private static double[] rgbToXyz(Color color) {
+  private static double[] rgbToXyz(Color color) {
     double[] xyz = new double[3];
     double r = color.getRed() / 255.0;
     double g = color.getGreen() / 255.0;
@@ -123,5 +123,4 @@ public class ColorMapper {
     xyz[2] = (r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883;
     return xyz;
   }
-
 }

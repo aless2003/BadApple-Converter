@@ -105,7 +105,7 @@ public class FrameAsciiProcessor {
     } else {
       String prevFrame = asciiFrames[counter - 1];
       String nextFrame = asciiFrames[counter];
-      //logger.info("Frame: {}", counter);
+      // logger.info("Frame: {}", counter);
       printDiff(prevFrame, nextFrame);
     }
     counter++;
@@ -137,8 +137,7 @@ public class FrameAsciiProcessor {
         }
 
         if (prevChar != nextChar || !isSameColor) {
-          Ansi ansi = Ansi.ansi()
-              .cursor(currentRow, currentCol);
+          Ansi ansi = Ansi.ansi().cursor(currentRow, currentCol);
 
           if (color) {
             ansi = ansi.fgRgb(nextColor.getRed(), nextColor.getGreen(), nextColor.getBlue());
@@ -177,7 +176,7 @@ public class FrameAsciiProcessor {
             .setStyle(ProgressBarStyle.ASCII);
 
     framePixels = new ArrayList<>(frames.size());
-    //fill with empty lists
+    // fill with empty lists
     for (int i = 0; i < frames.size(); i++) {
       framePixels.add(new ArrayList<>());
     }
@@ -194,19 +193,23 @@ public class FrameAsciiProcessor {
         BufferedImage image = ImageIO.read(frame);
 
         final String imageName = frame.getName();
-        var convertFuture = converter.submit(() -> {
-          String output = ascii.convert(image);
-          asciiFrames[Integer.parseInt(imageName.split("-")[1].split("\\.")[0])] = output;
-          pb.step();
-        });
+        var convertFuture =
+            converter.submit(
+                () -> {
+                  String output = ascii.convert(image);
+                  asciiFrames[Integer.parseInt(imageName.split("-")[1].split("\\.")[0])] = output;
+                  pb.step();
+                });
         futures.add(convertFuture);
 
         if (color) {
           final int frameIndex = i;
-          var mapFuture = colorMapper.submit(() -> {
-            addColorFrame(image, frameIndex);
-            pb.step();
-          });
+          var mapFuture =
+              colorMapper.submit(
+                  () -> {
+                    addColorFrame(image, frameIndex);
+                    pb.step();
+                  });
           futures.add(mapFuture);
         }
       }
@@ -223,7 +226,7 @@ public class FrameAsciiProcessor {
       logger.error("Couldn't Process frames", e);
       throw new RuntimeException(e);
     }
-    
+
     converter.shutdown();
     colorMapper.shutdown();
 

@@ -115,10 +115,10 @@ public class Main {
         .type(Boolean.class)
         .setDefault(false);
 
-    parser.addArgument("-u", "--url")
-        .help("The YouTube URL to download");
+    parser.addArgument("-u", "--url").help("The YouTube URL to download");
 
-    parser.addArgument("-c", "--color")
+    parser
+        .addArgument("-c", "--color")
         .help("Whether to use color or not (Warning: this can dramatically decrease performance)")
         .type(Boolean.class)
         .setDefault(false);
